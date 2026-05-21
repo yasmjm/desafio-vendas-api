@@ -1,0 +1,20 @@
+version: '3.8'    # versão do formato do docker-compose
+
+services:
+  postgres:
+    image: postgres:16-alpine   # imagem oficial do PostgreSQL, versão Alpine (leve)
+    container_name: vendas-postgres  # nome do container para identificar
+    environment:
+      POSTGRES_DB: vendas_db          # nome do banco que será criado
+      POSTGRES_USER: postgres         # usuário do banco
+      POSTGRES_PASSWORD: postgres123  # senha do banco
+    ports:
+      - "5433:5432"  # porta_do_host:porta_do_container
+                     # seu código acessa localhost:5433
+                     # que é redirecionado para o container na porta 5433
+    volumes:
+      - vendas_data:/var/lib/postgresql/data  # persiste os dados entre reinícios
+                                               # sem isso, os dados somem ao parar
+
+volumes:
+  vendas_data:  # declara o volume para ser gerenciado pelo Docker
