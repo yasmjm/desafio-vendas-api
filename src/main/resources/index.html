@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Vendas com 2FA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .card { box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+    <div class="container my-5">
+        <h1 class="text-center mb-4">Gerenciador de Vendas & Módulo 2FA</h1>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark fw-bold">🔐 Simulador de Token 2FA</div>
+                    <div class="card-body">
+                        <p class="card-text text-muted small">Como não estamos usando app externo (Google Authenticator), use este painel para capturar o código dinâmico atual do servidor.</p>
+                        <div class="d-grid mb-3">
+                            <button id="btnObterOtp" class="btn btn-outline-dark btn-sm">Obter Token Atual</button>
+                        </div>
+                        <div class="bg-light p-3 rounded text-center border">
+                            <span id="otpDisplay" class="fs-2 fw-bold text-danger tracking-widest">------</span>
+                            <div id="otpTimer" class="small text-muted mt-1">Clique para gerar</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white fw-bold">📦 Formular Nova Venda</div>
+                    <div class="card-body">
+                        <form id="formVenda">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Cliente</label>
+                                    <input type="text" id="cliente" class="form-control" placeholder="Nome do Cliente" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Data da Venda</label>
+                                    <input type="date" id="dataVenda" class="form-control" required>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Forma de Pagamento</label>
+                                    <select id="formaPagamento" class="form-select" required>
+                                        <option value="CARTAO_CREDITO">Cartão de Crédito</option>
+                                        <option value="BOLETO">Boleto Bancário</option>
+                                        <option value="PIX" selected>Pix</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Status da Venda</label>
+                                    <select id="status" class="form-select" required>
+                                        <option value="PENDENTE">Pendente</option>
+                                        <option value="PAGO" selected>Pago</option>
+                                        <option value="CANCELADO">Cancelado</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Observação (Opcional)</label>
+                                <textarea id="observacao" class="form-control" rows="2" placeholder="Informações adicionais..."></textarea>
+                            </div>
+
+                            <h5 class="mt-4 mb-2 text-secondary">Item da Venda (Mapeado no DTO)</h5>
+                            <div class="bg-light p-3 rounded mb-4 border">
+                                <div class="row g-2">
+                                    <div class="col-md-2">
+                                        <label class="form-label small">ID Prod</label>
+                                        <input type="number" id="prodId" class="form-control form-control-sm" value="101" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Descrição</label>
+                                        <input type="text" id="prodDesc" class="form-control form-control-sm" value="Notebook Avell Ryzen 7" required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label small">Qtd</label>
+                                        <input type="number" id="prodQtd" class="form-control form-control-sm" value="1" required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label small">Unitário (R$)</label>
+                                        <input type="number" id="prodValor" class="form-control form-control-sm" value="4500.00" step="0.01" required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label small">Total Item</label>
+                                        <input type="number" id="prodTotal" class="form-control form-control-sm" value="4500.00" step="0.01" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4 p-3 bg-danger-subtle rounded border border-danger">
+                                <label class="form-label fw-bold text-danger">🔑 Código de Autenticação 2FA (Obrigatório)</label>
+                                <input type="text" id="inputOtp" class="form-control form-control-lg text-center" placeholder="Insira o código de 6 dígitos aqui" maxlength="6" required>
+                                <div class="form-text text-dark">O filtro de segurança do Spring Boot interceptará o cabeçalho <code>X-OTP-Code</code> da requisição.</div>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">Submeter e Salvar Venda</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header bg-dark text-white font-monospace small">📟 Retorno do Servidor (Logs HTTP)</div>
+                    <div id="apiResponse" class="card-body bg-light font-monospace small text-dark style-scroll" style="max-height: 250px; overflow-y: auto; white-space: pre-wrap;">Nenhuma requisição enviada ainda.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('dataVenda').value = new Date().toISOString().split('T')[0];
+
+        const btnObterOtp = document.getElementById('btnObterOtp');
+        const otpDisplay = document.getElementById('otpDisplay');
+        const apiResponse = document.getElementById('apiResponse');
+
+        btnObterOtp.addEventListener('click', async () => {
+            try {
+                const res = await fetch('/otp/atual');
+                const dados = await res.json();
+                otpDisplay.innerText = dados.codigo;
+                document.getElementById('otpTimer').innerText = "Válido agora!";
+            } catch (err) {
+                otpDisplay.innerText = "ERRO";
+            }
+        });
+
+        document.getElementById('formVenda').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            apiResponse.innerText = "Enviando dados para a API...";
+
+            const payload = {
+                cliente: document.getElementById('cliente').value,
+                dataVenda: document.getElementById('dataVenda').value,
+                valorTotal: parseFloat(document.getElementById('prodTotal').value),
+                status: document.getElementById('status').value,
+                formaPagamento: document.getElementById('formaPagamento').value,
+                observacao: document.getElementById('observacao').value,
+                itens: [{
+                    produtoId: parseInt(document.getElementById('prodId').value),
+                    descricaoProduto: document.getElementById('prodDesc').value,
+                    quantidade: parseInt(document.getElementById('prodQtd').value),
+                    valorUnitario: parseFloat(document.getElementById('prodValor').value),
+                    valorTotal: parseFloat(document.getElementById('prodTotal').value)
+                }]
+            };
+
+            const token2FA = document.getElementById('inputOtp').value;
+
+            try {
+                const res = await fetch('/api/vendas', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Basic ' + btoa('admin:admin123'),
+                        'X-OTP-Code': token2FA
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const respostaJson = await res.json();
+                
+                apiResponse.innerText = `[HTTP Status ${res.status}]\n` + JSON.stringify(respostaJson, null, 2);
+            } catch (err) {
+                apiResponse.innerText = "Falha crítica de comunicação com o servidor. Verifique o terminal do Spring.";
+            }
+        });
+    </script>
+</body>
+</html>
