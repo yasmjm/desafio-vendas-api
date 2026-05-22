@@ -18,7 +18,7 @@
         <div class="row g-4">
             <div class="col-md-4">
                 <div class="card border-warning">
-                    <div class="card-header bg-warning text-dark fw-bold">🔐 Simulador de Token 2FA</div>
+                    <div class="card-header bg-warning text-dark fw-bold"> Simulador de Token 2FA</div>
                     <div class="card-body">
                         <p class="card-text text-muted small">Como não estamos usando app externo (Google Authenticator), use este painel para capturar o código dinâmico atual do servidor.</p>
                         <div class="d-grid mb-3">
@@ -34,7 +34,7 @@
 
             <div class="col-md-8">
                 <div class="card">
-                    <div class="card-header bg-primary text-white fw-bold">📦 Formular Nova Venda</div>
+                    <div class="card-header bg-primary text-white fw-bold"> Formular Nova Venda</div>
                     <div class="card-body">
                         <form id="formVenda">
                             <div class="row g-3 mb-3">
@@ -99,7 +99,7 @@
                             </div>
 
                             <div class="mb-4 p-3 bg-danger-subtle rounded border border-danger">
-                                <label class="form-label fw-bold text-danger">🔑 Código de Autenticação 2FA (Obrigatório)</label>
+                                <label class="form-label fw-bold text-danger"> Código de Autenticação 2FA (Obrigatório)</label>
                                 <input type="text" id="inputOtp" class="form-control form-control-lg text-center" placeholder="Insira o código de 6 dígitos aqui" maxlength="6" required>
                                 <div class="form-text text-dark">O filtro de segurança do Spring Boot interceptará o cabeçalho <code>X-OTP-Code</code> da requisição.</div>
                             </div>
@@ -112,7 +112,7 @@
                 </div>
 
                 <div class="card mt-4">
-                    <div class="card-header bg-dark text-white font-monospace small">📟 Retorno do Servidor (Logs HTTP)</div>
+                    <div class="card-header bg-dark text-white font-monospace small"> Retorno do Servidor (Logs HTTP)</div>
                     <div id="apiResponse" class="card-body bg-light font-monospace small text-dark style-scroll" style="max-height: 250px; overflow-y: auto; white-space: pre-wrap;">Nenhuma requisição enviada ainda.</div>
                 </div>
             </div>
