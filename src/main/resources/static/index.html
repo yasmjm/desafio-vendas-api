@@ -8,154 +8,217 @@
     <style>
         body { background-color: #f8f9fa; }
         .card { box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        #otpDisplay { letter-spacing: 0.3em; }
     </style>
 </head>
 <body>
 
     <div class="container my-5">
-        <h1 class="text-center mb-4">Gerenciador de Vendas & Módulo 2FA</h1>
+        <h1 class="text-center mb-4">Gerenciador de Vendas &amp; Módulo 2FA</h1>
 
         <div class="row g-4">
+
+            <!-- Painel OTP -->
             <div class="col-md-4">
                 <div class="card border-warning">
-                    <div class="card-header bg-warning text-dark fw-bold"> Simulador de Token 2FA</div>
+                    <div class="card-header bg-warning text-dark fw-bold">Simulador de Token 2FA</div>
                     <div class="card-body">
-                        <p class="card-text text-muted small">Como não estamos usando app externo (Google Authenticator), use este painel para capturar o código dinâmico atual do servidor.</p>
+                        <p class="card-text text-muted small">
+                            Como não estamos usando app externo (Google Authenticator),
+                            use este painel para capturar o código dinâmico atual do servidor.
+                        </p>
                         <div class="d-grid mb-3">
                             <button id="btnObterOtp" class="btn btn-outline-dark btn-sm">Obter Token Atual</button>
                         </div>
                         <div class="bg-light p-3 rounded text-center border">
-                            <span id="otpDisplay" class="fs-2 fw-bold text-danger tracking-widest">------</span>
+                            <span id="otpDisplay" class="fs-2 fw-bold text-danger">------</span>
                             <div id="otpTimer" class="small text-muted mt-1">Clique para gerar</div>
+                        </div>
+                        <div class="form-text text-center mt-2 text-success d-none" id="otpAutoFillMsg">
+                            ✔ Código preenchido automaticamente no formulário
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Formulário de Venda -->
             <div class="col-md-8">
                 <div class="card">
-                    <div class="card-header bg-primary text-white fw-bold"> Formular Nova Venda</div>
+                    <div class="card-header bg-primary text-white fw-bold">Formular Venda</div>
                     <div class="card-body">
                         <form id="formVenda">
+
+                            <!-- ID da venda (opcional — só preenche para atualizar) -->
+                            <div class="mb-3 p-3 bg-info-subtle rounded border border-info">
+                                <label class="form-label fw-bold text-info-emphasis">
+                                    ID da Venda
+                                    <span class="fw-normal text-muted small">(deixe vazio para criar nova — preencha para atualizar)</span>
+                                </label>
+                                <input type="number" id="vendaId" class="form-control" placeholder="Ex: 1">
+                            </div>
+
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
-                                    <label class="form-label">Cliente</label>
-                                    <input type="text" id="cliente" class="form-control" placeholder="Nome do Cliente" required>
+                                    <label class="form-label">Cliente <span class="text-danger">*</span></label>
+                                    <input type="text" id="cliente" class="form-control" placeholder="Nome do Cliente">
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Data da Venda</label>
-                                    <input type="date" id="dataVenda" class="form-control" required>
+                                    <label class="form-label">Data da Venda <span class="text-danger">*</span></label>
+                                    <input type="date" id="dataVenda" class="form-control">
                                 </div>
                             </div>
 
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
-                                    <label class="form-label">Forma de Pagamento</label>
-                                    <select id="formaPagamento" class="form-select" required>
-                                        <option value="CARTAO_CREDITO">Cartão de Crédito</option>
-                                        <option value="BOLETO">Boleto Bancário</option>
-                                        <option value="PIX" selected>Pix</option>
+                                    <label class="form-label">Forma de Pagamento <span class="text-danger">*</span></label>
+                                    <select id="formaPagamento" class="form-select">
+                                        <option value="PIX" selected>PIX</option>
+                                        <option value="CARTAO">Cartão</option>
+                                        <option value="BOLETO">Boleto</option>
+                                        <option value="DINHEIRO">Dinheiro</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Status da Venda</label>
-                                    <select id="status" class="form-select" required>
-                                        <option value="PENDENTE">Pendente</option>
-                                        <option value="PAGO" selected>Pago</option>
-                                        <option value="CANCELADO">Cancelado</option>
+                                    <label class="form-label">Status da Venda <span class="text-danger">*</span></label>
+                                    <select id="status" class="form-select">
+                                        <option value="ABERTA" selected>Aberta</option>
+                                        <option value="FECHADA">Fechada</option>
+                                        <option value="CANCELADA">Cancelada</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Observação (Opcional)</label>
+                                <label class="form-label">Observação (opcional)</label>
                                 <textarea id="observacao" class="form-control" rows="2" placeholder="Informações adicionais..."></textarea>
                             </div>
 
-                            <h5 class="mt-4 mb-2 text-secondary">Item da Venda (Mapeado no DTO)</h5>
-                            <div class="bg-light p-3 rounded mb-4 border">
+                            <!-- Item da Venda -->
+                            <h5 class="mt-4 mb-2 text-secondary">Item da Venda</h5>
+                            <div class="bg-light p-3 rounded mb-3 border">
                                 <div class="row g-2">
                                     <div class="col-md-2">
-                                        <label class="form-label small">ID Prod</label>
-                                        <input type="number" id="prodId" class="form-control form-control-sm" value="101" required>
+                                        <label class="form-label small">ID Prod <span class="text-danger">*</span></label>
+                                        <input type="number" id="prodId" class="form-control form-control-sm" value="101">
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label small">Descrição</label>
-                                        <input type="text" id="prodDesc" class="form-control form-control-sm" value="Notebook Avell Ryzen 7" required>
+                                        <label class="form-label small">Descrição <span class="text-danger">*</span></label>
+                                        <input type="text" id="prodDesc" class="form-control form-control-sm" value="Notebook Avell Ryzen 7">
                                     </div>
                                     <div class="col-md-2">
-                                        <label class="form-label small">Qtd</label>
-                                        <input type="number" id="prodQtd" class="form-control form-control-sm" value="1" required>
+                                        <label class="form-label small">Qtd <span class="text-danger">*</span></label>
+                                        <input type="number" id="prodQtd" class="form-control form-control-sm" value="1">
                                     </div>
                                     <div class="col-md-2">
-                                        <label class="form-label small">Unitário (R$)</label>
-                                        <input type="number" id="prodValor" class="form-control form-control-sm" value="4500.00" step="0.01" required>
+                                        <label class="form-label small">Unitário (R$) <span class="text-danger">*</span></label>
+                                        <input type="number" id="prodValor" class="form-control form-control-sm" value="4500.00" step="0.01">
                                     </div>
                                     <div class="col-md-2">
-                                        <label class="form-label small">Total Item</label>
-                                        <input type="number" id="prodTotal" class="form-control form-control-sm" value="4500.00" step="0.01" required>
+                                        <label class="form-label small">Total Item <span class="text-danger">*</span></label>
+                                        <input type="number" id="prodTotal" class="form-control form-control-sm" value="4500.00" step="0.01">
                                     </div>
+                                </div>
+                                <div class="form-text mt-2">
+                                    O <strong>Valor Total da venda</strong> será calculado automaticamente com base no Total do Item.
                                 </div>
                             </div>
 
+                            <!-- Campo OTP -->
                             <div class="mb-4 p-3 bg-danger-subtle rounded border border-danger">
-                                <label class="form-label fw-bold text-danger"> Código de Autenticação 2FA (Obrigatório)</label>
-                                <input type="text" id="inputOtp" class="form-control form-control-lg text-center" placeholder="Insira o código de 6 dígitos aqui" maxlength="6" required>
-                                <div class="form-text text-dark">O filtro de segurança do Spring Boot interceptará o cabeçalho <code>X-OTP-Code</code> da requisição.</div>
+                                <label class="form-label fw-bold text-danger">
+                                    Código de Autenticação 2FA <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" id="inputOtp" class="form-control form-control-lg text-center font-monospace"
+                                    placeholder="Clique em 'Obter Token Atual' →" maxlength="6">
+                                <div class="form-text text-dark mt-1">
+                                    O filtro do Spring Boot valida o header <code>X-OTP-Code</code> a cada requisição.
+                                    O código expira em 30 segundos.
+                                </div>
                             </div>
 
                             <div class="d-grid">
-                                <button type="submit" class="btn btn-primary btn-lg">Submeter e Salvar Venda</button>
+                                <button type="submit" class="btn btn-primary btn-lg">Enviar Venda</button>
                             </div>
                         </form>
                     </div>
                 </div>
 
+                <!-- Resposta da API -->
                 <div class="card mt-4">
-                    <div class="card-header bg-dark text-white font-monospace small"> Retorno do Servidor (Logs HTTP)</div>
-                    <div id="apiResponse" class="card-body bg-light font-monospace small text-dark style-scroll" style="max-height: 250px; overflow-y: auto; white-space: pre-wrap;">Nenhuma requisição enviada ainda.</div>
+                    <div class="card-header bg-dark text-white font-monospace small d-flex justify-content-between align-items-center">
+                        <span>Retorno do Servidor</span>
+                        <span id="statusBadge" class="badge bg-secondary">aguardando</span>
+                    </div>
+                    <div id="apiResponse"
+                         class="card-body bg-light font-monospace small text-dark"
+                         style="max-height: 300px; overflow-y: auto; white-space: pre-wrap;">
+Nenhuma requisição enviada ainda.</div>
                 </div>
             </div>
+
         </div>
     </div>
 
     <script>
+        // Preenche a data de hoje por padrão
         document.getElementById('dataVenda').value = new Date().toISOString().split('T')[0];
 
-        const btnObterOtp = document.getElementById('btnObterOtp');
-        const otpDisplay = document.getElementById('otpDisplay');
-        const apiResponse = document.getElementById('apiResponse');
+        const otpDisplay   = document.getElementById('otpDisplay');
+        const otpTimer     = document.getElementById('otpTimer');
+        const inputOtp     = document.getElementById('inputOtp');
+        const apiResponse  = document.getElementById('apiResponse');
+        const statusBadge  = document.getElementById('statusBadge');
+        const otpAutoFillMsg = document.getElementById('otpAutoFillMsg');
 
-        btnObterOtp.addEventListener('click', async () => {
+        // Botão: busca OTP e já preenche o campo automaticamente
+        document.getElementById('btnObterOtp').addEventListener('click', async () => {
             try {
-                const res = await fetch('/otp/atual');
+                const res   = await fetch('/otp/atual');
                 const dados = await res.json();
+
                 otpDisplay.innerText = dados.codigo;
-                document.getElementById('otpTimer').innerText = "Válido agora!";
+                otpTimer.innerText   = 'Válido por ~30 segundos';
+
+                // Preenche o campo do formulário automaticamente
+                inputOtp.value = dados.codigo;
+                otpAutoFillMsg.classList.remove('d-none');
+
             } catch (err) {
-                otpDisplay.innerText = "ERRO";
+                otpDisplay.innerText = 'ERRO';
+                otpTimer.innerText   = 'Não foi possível obter o token. A API está rodando?';
             }
         });
 
+        // Envio do formulário
         document.getElementById('formVenda').addEventListener('submit', async (e) => {
             e.preventDefault();
-            apiResponse.innerText = "Enviando dados para a API...";
+            apiResponse.innerText = 'Enviando dados para a API...';
+            statusBadge.className = 'badge bg-secondary';
+            statusBadge.innerText = 'aguardando';
+
+            const vendaIdVal = document.getElementById('vendaId').value;
+            const totalItem  = parseFloat(document.getElementById('prodTotal').value);
 
             const payload = {
-                cliente: document.getElementById('cliente').value,
-                dataVenda: document.getElementById('dataVenda').value,
-                valorTotal: parseFloat(document.getElementById('prodTotal').value),
-                status: document.getElementById('status').value,
+                cliente:        document.getElementById('cliente').value,
+                dataVenda:      document.getElementById('dataVenda').value,
+                valorTotal:     totalItem,
+                status:         document.getElementById('status').value,
                 formaPagamento: document.getElementById('formaPagamento').value,
-                observacao: document.getElementById('observacao').value,
+                observacao:     document.getElementById('observacao').value,
                 itens: [{
-                    produtoId: parseInt(document.getElementById('prodId').value),
+                    produtoId:        parseInt(document.getElementById('prodId').value),
                     descricaoProduto: document.getElementById('prodDesc').value,
-                    quantidade: parseInt(document.getElementById('prodQtd').value),
-                    valorUnitario: parseFloat(document.getElementById('prodValor').value),
-                    valorTotal: parseFloat(document.getElementById('prodTotal').value)
+                    quantidade:       parseInt(document.getElementById('prodQtd').value),
+                    valorUnitario:    parseFloat(document.getElementById('prodValor').value),
+                    valorTotal:       totalItem
                 }]
             };
+
+            // Só inclui o id se o usuário preencheu (cenário de atualização)
+            if (vendaIdVal) {
+                payload.id = parseInt(vendaIdVal);
+            }
 
             const token2FA = document.getElementById('inputOtp').value;
 
@@ -163,18 +226,35 @@
                 const res = await fetch('/api/vendas', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type':  'application/json',
                         'Authorization': 'Basic ' + btoa('admin:admin123'),
-                        'X-OTP-Code': token2FA
+                        'X-OTP-Code':    token2FA
                     },
                     body: JSON.stringify(payload)
                 });
 
                 const respostaJson = await res.json();
-                
-                apiResponse.innerText = `[HTTP Status ${res.status}]\n` + JSON.stringify(respostaJson, null, 2);
+
+                // Badge colorido por status HTTP
+                statusBadge.innerText = `HTTP ${res.status}`;
+                if (res.status === 200) {
+                    statusBadge.className = 'badge bg-success';
+                } else if (res.status === 400) {
+                    statusBadge.className = 'badge bg-warning text-dark';
+                } else if (res.status === 401) {
+                    statusBadge.className = 'badge bg-danger';
+                } else if (res.status === 404) {
+                    statusBadge.className = 'badge bg-secondary';
+                } else {
+                    statusBadge.className = 'badge bg-dark';
+                }
+
+                apiResponse.innerText = JSON.stringify(respostaJson, null, 2);
+
             } catch (err) {
-                apiResponse.innerText = "Falha crítica de comunicação com o servidor. Verifique o terminal do Spring.";
+                statusBadge.className = 'badge bg-danger';
+                statusBadge.innerText = 'ERRO';
+                apiResponse.innerText = 'Falha de comunicação com o servidor.\nVerifique se a API está rodando em localhost:8080.';
             }
         });
     </script>
